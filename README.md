@@ -1,7 +1,5 @@
 # 🧠 Demo ST — Streamlit
-App de inferencia ML para clasificar (POS/NEG).
-👉 [Ver Model Card](artefactos/v1/model_card.md)
-
+🤖 Predicción de Diabetes (Pima Dataset de statsmodels.api.datasets.get_rdataset("Pima.tr", "MASS").data ) para aprender Streamlit
 
 ---
 
