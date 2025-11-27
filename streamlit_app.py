@@ -315,6 +315,9 @@ if st.session_state.page == "rna":
 
             st.session_state.show_save = True
 
+            st.markdown("<h3 class='estrategias-title'>Estrategias de mejora</h3>", unsafe_allow_html=True)
+            st.markdown("<p class='estrategias-content'>Matar a Andres</p>", unsafe_allow_html=True)
+
         if st.session_state.get("show_save", False):
             if st.button("Guardar", type="primary", use_container_width=True):
                 pred_r = predict_record(model_r, pre_r, schema_r, map_r, entrada)

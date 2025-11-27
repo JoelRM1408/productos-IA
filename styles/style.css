@@ -265,6 +265,16 @@ label[data-testid="stWidgetLabel"] p {
     color: #17385F;   /* tu color principal */
 }
 
+.estrategias-title{
+    color: #17385F;
+    font-weight: 700;
+}
+
+.estrategias-content{
+    color: #17385F;
+    margin-bottom: 20px;
+}
+
 div.stButton > button {
     background-color: #17385F !important;
     color: white !important;
