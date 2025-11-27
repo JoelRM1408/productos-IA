@@ -3,98 +3,284 @@ import streamlit as st
 import pandas as pd
 import joblib
 from pathlib import Path
+from loader_modelos import load_bundle, predict_record
+import time
+import base64
+from supabase_client import supabase
 
-# 1. Cargar modelo
-MODEL_PATH = Path("artefactos") / "modelo_pima.pkl"
-modelo = joblib.load(MODEL_PATH)
+def load_image_base64(path):
+    with open(path, "rb") as f:
+        return base64.b64encode(f.read()).decode()
 
-st.title("🤖 Predicción de Diabetes ")
-st.write("(Pima Dataset)")
+logo64 = load_image_base64("img/logoupeu.png")
+guardian = load_image_base64("img/logoguardian.png")
+icono_usuario = load_image_base64("img/usr.jpg")
 
-# Tabs
-tab1, tab2, tab3 = st.tabs(["🧪 Predicción", "📊 Análisis del modelo", "📈 Gráficos interactivos"])
-# --- TAB 1: Entrada y predicción ---
-with tab1:
-    # 2. Ingreso de datos del paciente
-    st.subheader("Predicción de Diabetes")
-    st.write("Ingrese los valores clínicos para predecir si la paciente probablemente tiene diabetes.")
-    data = {
-        'npreg': st.slider("Número de embarazos", 0, 20, 2),
-        'glu':   st.slider("Nivel de glucosa (mg/dl)", 50, 200, 100),
-        'bp':    st.slider("Presión arterial (mmHg)", 40, 130, 70),
-        'skin':  st.slider("Espesor del pliegue cutáneo (mm)", 7, 100, 20),
-        'bmi':   st.slider("IMC", 10.0, 50.0, 25.0),
-        'ped':   st.slider("Pedigree de diabetes", 0.0, 2.5, 0.5),
-        'age':   st.slider("Edad (años)", 18, 90, 35)
-    }
 
-    # 3. Predicción
-    if st.button("Predecir"):
-        entrada = pd.DataFrame([data])
-        pred = modelo.predict(entrada)[0]
-        prob = modelo.predict_proba(entrada)[0][1]
-        resultado = "Diabética" if pred == 1 else "No diabética"
-        st.write(f"Resultado: **{resultado}**")
-        st.write(f"Probabilidad estimada: **{prob:.2f}**")
+def load_css(file_name):
+    with open(file_name, "r") as f:
+        st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)
 
-# --- TAB 2: Análisis del modelo ---
-with tab2:
-    # 4. Importancia de cada variable en la predicción
-    # Coeficientes del modelo
-    coef_df = pd.DataFrame({
-        'Variable': modelo.feature_names_in_,
-        'Peso': modelo.coef_[0]
-    }).sort_values(by='Peso', key=abs, ascending=False)
+load_css("styles/style.css") 
 
-    st.subheader("Importancia de cada variable en la predicción")
-    st.bar_chart(coef_df.set_index("Variable"))
+def nav_button(label, key):
+    active = "nav-active" if st.session_state.page == key else ""
+    if st.button(label, key=key):
+        st.session_state.page = key
+        st.rerun()
 
-    # 5. Correlación
-    import statsmodels.api as sm
-    import seaborn as sns
-    import matplotlib.pyplot as plt
+if "page" not in st.session_state:
+    st.session_state.page = "rna"
 
-    df = sm.datasets.get_rdataset("Pima.tr", "MASS").data
-    df['type'] = df['type'].map({'Yes': 1, 'No': 0})
+colB, colC = st.columns(2)
 
-    st.subheader("Correlación entre variables")
-    fig, ax = plt.subplots(figsize=(8, 5))
-    sns.heatmap(df.corr(), annot=True, cmap="coolwarm", ax=ax)
-    st.pyplot(fig)
+with colB: nav_button("RNA: Guardian", "rna")
+with colC: nav_button("Clustering: Edu-Insight 360", "cluster")
 
-# --- TAB 3: Gráficos interactivos ---
-with tab3:
-    # 6. Gráficos interactivos
-    st.subheader("📈 Gráficos interactivos")
 
-    # Copiamos y preparamos los datos
-    df_plot = df.copy()
-    df_plot['type'] = df_plot['type'].map({1: 'Diabética', 0: 'No diabética'})
+#RNAAAA
 
-    # Variables disponibles para graficar
-    variables = ['npreg', 'glu', 'bp', 'skin', 'bmi', 'ped', 'age']
+if st.session_state.page == "rna":
+    st.markdown(f"""
+    <div class="custom-header">
+        <img src="data:image/png;base64,{logo64}" class="logo">
+        <input class="search-bar" placeholder="Buscar Guardian">
+        <div class="header-icons">
+            <span class="bell">🔔</span>
+            <img src="data:image/jpeg;base64,{icono_usuario}" class="user-img">
+            <span class="menu">☰</span>
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
 
-    # Selección de variables para los ejes
-    col1, col2 = st.columns(2)
-    x_var = col1.selectbox("Elige variable para eje X", variables, index=0)
-    y_var = col2.selectbox("Elige variable para eje Y", variables, index=1)
 
-    # Crear gráfico interactivo
-    import plotly.express as px
-    fig_plotly = px.scatter(
-        df_plot,
-        x=x_var,
-        y=y_var,
-        color="type",
-        title=f"{x_var} vs {y_var} según diagnóstico",
-        labels={"type": "Diagnóstico", x_var: x_var, y_var: y_var},
-        hover_data=['npreg', 'bmi', 'glu', 'age'],
-        width=900,
-        height=600
-    )
+    col1, col2, col3, col4, col5 = st.columns(5)
 
-    # Mostrar gráfico
-    st.plotly_chart(fig_plotly)
+    with col1:
+        st.markdown("""
+            <div class="metric-card">
+                <p class="metric-title">Total de estudiantes</p>
+                <h2 class="metric-value">28</h2>
+            </div>
+        """, unsafe_allow_html=True)
 
-    st.subheader("Distribución de Glucosa")
-    st.plotly_chart(px.histogram(df, x="glu", color="type", barmode="overlay", nbins=40, labels={"type": "Diabetes (1=Sí)"}), use_container_width=True)
+    with col2:
+        st.markdown("""
+            <div class="metric-card">
+                <p class="metric-title">Riesgo de Deserción Promedio</p>
+                <h2 class="metric-value">Alto</h2>
+            </div>
+        """, unsafe_allow_html=True)
+
+    with col3:
+        st.markdown("""
+            <div class="metric-card">
+                <p class="metric-title">Rendimiento Promedio</p>
+                <h2 class="metric-value">Previsto</h2>
+            </div>
+        """, unsafe_allow_html=True)
+
+    with col4:
+        st.markdown("""
+            <div class="metric-card">
+                <p class="metric-title">Bienestar Estudiantil Promedio</p>
+                <h2 class="metric-value">Regular</h2>
+            </div>
+        """, unsafe_allow_html=True)
+
+    with col5:
+        st.markdown(f"""
+            <img src="data:image/png;base64,{guardian}" class="logo-guardian">
+        """, unsafe_allow_html=True)
+
+
+    res = supabase.table("estudiantes").select("*").execute()
+    datos = res.data
+
+    formateado = []
+    for fila in datos:
+        formateado.append([
+            fila["codigo_est"],
+            fila["nombre"],
+            fila["carrera"],
+            fila.get("riesgo_des", "-") or "-",
+            fila.get("rendimiento", "-") or "-",
+            fila.get("bienestar_est", "-") or "-"
+        ])
+
+
+    if "tabla_data" not in st.session_state:
+        st.session_state.tabla_data = formateado
+
+    html = """
+    <div class="custom-table">
+    <h3 class="table-title" 
+        style="
+            color:#002D62;
+            font-size:24px;
+            font-weight:700;
+        "
+    >
+        Tabla predictiva de estudiantes
+    </h3>
+    <table>
+    <thead>
+    <tr>
+    <th>Código</th>
+    <th>Nombre</th>
+    <th>Carrera</th>
+    <th>Riesgo de Deserción</th>
+    <th>Rendimiento</th>
+    <th>Bienestar Estudiantil</th>
+    <th>Opciones</th>
+    </tr>
+    </thead>
+    <tbody>
+    """
+
+    for i, (codigo, nombre, carrera, des, rend, bien) in enumerate(st.session_state.tabla_data):
+        html += f"""
+    <tr>
+    <td>{codigo}</td>
+    <td>{nombre}</td>
+    <td>{carrera}</td>
+    <td>{des}</td>
+    <td>{rend}</td>
+    <td>{bien}</td>
+    <td><form action="" method="get" style="margin:0;"><input type="hidden" name="row" value="{i}"><button class="action-btn" type="submit">Acciones</button></form></td>
+    </tr>
+    """
+
+    html += """
+    </tbody>
+    </table>
+    </div>
+    """
+
+    st.markdown(html, unsafe_allow_html=True)
+
+
+    @st.dialog("Perfil del estudiante")
+    def abrir_modal(codigo, nombre, carrera, des, rend, bien):
+
+        st.markdown(f"""
+        <h1 class='modal-title'>{nombre}</h1>
+        <p class='subtitle'><b>Código:</b> {codigo}</p>
+        <p class='subtitle'><b>Carrera:</b> {carrera}</p>
+        """, unsafe_allow_html=True)
+
+        st.markdown("<p class='modal-subtitle'>Datos importantes</p>", unsafe_allow_html=True)
+
+        nota_num = st.slider("PPS actual (0–20)", 0, 20, 12)
+
+        def clasificar_nota_pps(nota):
+            if nota < 11:
+                return "Inicio"
+            elif nota < 14:
+                return "En_Proceso"
+            elif nota < 17:
+                return "Previsto"
+            else:
+                return "Destacado"
+
+        pps_cat = clasificar_nota_pps(nota_num)
+
+        col1, col2, col3 = st.columns(3)
+        with col1:
+            est = st.selectbox("Nivel de estrés", ["Bajo", "Moderado", "Alto", "Muy_Alto"])
+            apoyo = st.selectbox("Soporte social", ["Insuficiente", "Moderado", "Bueno", "Excelente"])
+        with col2:
+            horas_estudio = st.selectbox("Horas de estudio", ["Insuficiente", "Limitado", "Adecuado", "Intensivo"])
+            procrast = st.selectbox("Procrastinación", ["Minimo", "Ocasional", "Frecuente", "Constante"])
+        with col3:
+            horas_trabajo = st.selectbox("Horas trabajo/semana", ["Ninguna", "Parcial_Baja", "Parcial_Alta", "Tiempo_Completo"])
+
+        entrada = {
+            "pps_actual_20": pps_cat,
+            "estres": est,
+            "apoyo_social": apoyo,
+            "horas_de_estudio_semana": horas_estudio,
+            "indice_procrastinacion": procrast,
+            "horas_trabajo_semana": horas_trabajo
+        }
+
+        st.markdown("<hr>", unsafe_allow_html=True)
+
+        if st.button("Predecir", type="primary", use_container_width=True):
+            pred_r = predict_record(model_r, pre_r, schema_r, map_r, entrada)
+            pred_d = predict_record(model_d, pre_d, schema_d, map_d, entrada)
+            pred_b = predict_record(model_b, pre_b, schema_b, map_b, entrada)
+
+            st.markdown("<p class='modal-subtitle'>Resultados</p>", unsafe_allow_html=True)
+
+            c1, c2, c3 = st.columns(3)
+
+            with c1:
+                label_r = pred_r["pred_label"]
+                prob_r = pred_r["probabilidades"][label_r]
+
+                st.markdown(
+                    f"""
+                    <div class='result-card'>
+                        <div class='result-title'>Prob. Rendimiento</div>
+                        <div class='result-value'>{label_r} ({prob_r:.2%})</div>
+                    </div>
+                    """,
+                    unsafe_allow_html=True
+                )
+
+            with c2:
+                st.markdown("<div class='result-card'>Prob. Deserción</div>", unsafe_allow_html=True)
+                st.write(pred_d["pred_label"])
+
+            with c3:
+                st.markdown("<div class='result-card'>Bienestar</div>", unsafe_allow_html=True)
+                st.write(pred_b["pred_label"])
+
+            st.session_state.tabla_data[i][3] = pred_d["pred_label"]   # Deserción
+            st.session_state.tabla_data[i][4] = pred_r["pred_label"]   # Rendimiento
+            st.session_state.tabla_data[i][5] = pred_b["pred_label"]   # Bienestar
+            
+            st.session_state.show_save = True
+
+        if st.session_state.get("show_save", False):   
+            if st.button("Guardar", type="primary", use_container_width=True):
+                nuevo_des = st.session_state.tabla_data[i][3]
+                nuevo_rend = st.session_state.tabla_data[i][4]
+                nuevo_bien = st.session_state.tabla_data[i][5]
+
+                supabase.table("estudiantes").update({
+                    "riesgo_des": nuevo_des,
+                    "rendimiento": nuevo_rend,
+                    "bienestar_est": nuevo_bien
+                }).eq("codigo_est", codigo).execute()
+                
+                st.session_state.show_results = True
+                st.session_state.show_save = True
+                time.sleep(2)   
+                st.rerun()
+            
+                
+    if "row" in st.query_params:
+        i = int(st.query_params["row"])
+        codigo, nombre, carrera, des, rend, bien = st.session_state.tabla_data[i]
+
+        abrir_modal(codigo, nombre, carrera, des, rend, bien)
+
+        st.query_params.clear()
+
+
+
+
+    #1 === Cargar los 3 modelos ===
+    model_r, pre_r, schema_r, map_r = load_bundle("artefactos/modelo_rendimiento/v1")
+    model_d, pre_d, schema_d, map_d = load_bundle("artefactos/modelo_desercion/v1")
+    model_b, pre_b, schema_b, map_b = load_bundle("artefactos/modelo_bienestar/v1")
+
+
+    
+
+#Cluster
+
+if st.session_state.page == "cluster":
+    st.write("Hola abel")

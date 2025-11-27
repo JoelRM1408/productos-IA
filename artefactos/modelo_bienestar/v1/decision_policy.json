@@ -1,0 +1,60 @@
+{
+  "model_name": "modelo_bienestar",
+  "classes": [
+    "Critico",
+    "Regular",
+    "Excelente"
+  ],
+  "accuracy": 0.5895,
+  "balanced_accuracy": 0.5307362576491123,
+  "metrics_by_class": {
+    "Critico": {
+      "precision": 0.5873925501432665,
+      "recall": 0.49160671462829736,
+      "f1-score": 0.5352480417754569,
+      "support": 417.0
+    },
+    "Regular": {
+      "precision": 0.40877598152424943,
+      "recall": 0.30360205831903947,
+      "f1-score": 0.3484251968503937,
+      "support": 583.0
+    },
+    "Excelente": {
+      "precision": 0.6543513957307061,
+      "recall": 0.797,
+      "f1-score": 0.7186654643823264,
+      "support": 1000.0
+    },
+    "accuracy": 0.5895,
+    "macro avg": {
+      "precision": 0.5501733091327407,
+      "recall": 0.5307362576491123,
+      "f1-score": 0.5341129010027257,
+      "support": 2000.0
+    },
+    "weighted avg": {
+      "precision": 0.5688052431845428,
+      "recall": 0.5895,
+      "f1-score": 0.5724978937832357,
+      "support": 2000.0
+    }
+  },
+  "confusion_matrix": [
+    [
+      205,
+      107,
+      105
+    ],
+    [
+      90,
+      177,
+      316
+    ],
+    [
+      54,
+      149,
+      797
+    ]
+  ]
+}

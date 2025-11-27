@@ -1,0 +1,60 @@
+{
+  "model_name": "modelo_desercion",
+  "classes": [
+    "Bajo",
+    "Medio",
+    "Alto"
+  ],
+  "accuracy": 0.6475,
+  "balanced_accuracy": 0.5485773249484066,
+  "metrics_by_class": {
+    "Bajo": {
+      "precision": 0.7318181818181818,
+      "recall": 0.8594306049822064,
+      "f1-score": 0.79050736497545,
+      "support": 1124.0
+    },
+    "Medio": {
+      "precision": 0.4106145251396648,
+      "recall": 0.2876712328767123,
+      "f1-score": 0.3383199079401611,
+      "support": 511.0
+    },
+    "Alto": {
+      "precision": 0.5652173913043478,
+      "recall": 0.4986301369863014,
+      "f1-score": 0.529839883551674,
+      "support": 365.0
+    },
+    "accuracy": 0.6475,
+    "macro avg": {
+      "precision": 0.5692166994207315,
+      "recall": 0.5485773249484066,
+      "f1-score": 0.5528890521557618,
+      "support": 2000.0
+    },
+    "weighted avg": {
+      "precision": 0.619346003268046,
+      "recall": 0.6475,
+      "f1-score": 0.6274016543430946,
+      "support": 2000.0
+    }
+  },
+  "confusion_matrix": [
+    [
+      966,
+      117,
+      41
+    ],
+    [
+      265,
+      147,
+      99
+    ],
+    [
+      89,
+      94,
+      182
+    ]
+  ]
+}

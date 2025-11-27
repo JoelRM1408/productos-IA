@@ -1,0 +1,27 @@
+[
+  {
+    "pps_actual_20": "Inicio",
+    "horas_de_estudio_semana": "Limitado",
+    "indice_procrastinacion": "Frecuente"
+  },
+  {
+    "pps_actual_20": "Previsto",
+    "horas_de_estudio_semana": "Adecuado",
+    "indice_procrastinacion": "Minimo"
+  },
+  {
+    "pps_actual_20": "Destacado",
+    "horas_de_estudio_semana": "Adecuado",
+    "indice_procrastinacion": "Ocasional"
+  },
+  {
+    "pps_actual_20": "Destacado",
+    "horas_de_estudio_semana": "Intensivo",
+    "indice_procrastinacion": "Ocasional"
+  },
+  {
+    "pps_actual_20": "Inicio",
+    "horas_de_estudio_semana": "Adecuado",
+    "indice_procrastinacion": "Constante"
+  }
+]

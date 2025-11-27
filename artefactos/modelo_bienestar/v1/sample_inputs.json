@@ -1,0 +1,22 @@
+[
+  {
+    "estres": "Alto",
+    "apoyo_social": "Insuficiente"
+  },
+  {
+    "estres": "Alto",
+    "apoyo_social": "Insuficiente"
+  },
+  {
+    "estres": "Bajo",
+    "apoyo_social": "Moderado"
+  },
+  {
+    "estres": "Muy_Alto",
+    "apoyo_social": "Moderado"
+  },
+  {
+    "estres": "Bajo",
+    "apoyo_social": "Bueno"
+  }
+]

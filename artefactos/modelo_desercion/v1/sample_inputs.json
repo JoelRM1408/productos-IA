@@ -1,0 +1,27 @@
+[
+  {
+    "horas_trabajo_semana": "Ninguna",
+    "estres": "Muy_Alto",
+    "apoyo_social": "Moderado"
+  },
+  {
+    "horas_trabajo_semana": "Ninguna",
+    "estres": "Moderado",
+    "apoyo_social": "Moderado"
+  },
+  {
+    "horas_trabajo_semana": "Parcial_Baja",
+    "estres": "Bajo",
+    "apoyo_social": "Moderado"
+  },
+  {
+    "horas_trabajo_semana": "Ninguna",
+    "estres": "Bajo",
+    "apoyo_social": "Excelente"
+  },
+  {
+    "horas_trabajo_semana": "Parcial_Alta",
+    "estres": "Bajo",
+    "apoyo_social": "Bueno"
+  }
+]

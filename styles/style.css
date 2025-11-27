@@ -1,0 +1,330 @@
+.stApp {
+    background-color: #D9D9D9; 
+}
+header[data-testid="stHeader"] {
+    display: none;
+}
+.nav-container {
+    display: flex;
+    justify-content: center;
+    gap: 35px;
+    margin-top: 10px;
+}
+.nav-item {
+    font-size: 17px;
+    color: #003366;
+    cursor: pointer;
+    padding: 6px 18px;
+    border-radius: 8px;
+    font-weight: 600;
+}
+.nav-item:hover {
+    background-color: #e5e5e5;
+}
+.nav-active {
+    background-color: #003366;
+    color: white !important;
+}
+.block-container {
+    max-width: 100%; 
+    padding-left: 5%;
+    padding-right: 5%;
+    padding-top: 2%;
+
+}
+
+
+.custom-header {
+    width: 100%;
+    height: 100%;
+    background: #e8e8e8;
+    padding: 15px 25px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-radius: 12px 12px 12px 12px;
+}
+
+.logo {
+    height: 80px;
+}
+
+
+.search-bar {
+    width: 400px;
+    padding: 10px 15px;
+    border-radius: 25px;
+    border: none;
+    background: white;
+    font-size: 15px;
+    color: black;
+}
+
+.header-icons {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.bell {
+    font-size: 22px;
+    cursor: pointer;
+}
+
+.user-img {
+    width: 35px;
+    height: 35px;
+    border-radius: 50%;
+}
+
+.menu {
+    font-size: 28px;
+    cursor: pointer;
+    color: #17385f;
+}
+
+
+.metric-card {
+    background: white;
+    display: flex;
+    flex-direction: column;
+    padding: 20px 20px 0px 20px;
+    border-radius: 14px;
+    box-shadow: 0 3px 8px rgba(0,0,0,0.1);
+    text-align: center;
+    margin-top: 30px;
+    width: 100%;
+    align-items: center;
+    justify-content: center;
+}
+
+
+.imgproducto {
+    background: white;
+    padding: 20px 20px 0px 20px;
+    border-radius: 14px;
+    box-shadow: 0 3px 8px rgba(0,0,0,0.1);
+    text-align: center;
+    margin-top: 30px;;
+    margin-left: 10%;
+    width: 90%;
+}
+
+.logo-guardian{
+    margin-left: 20px;
+    padding-top: 20px;
+}
+
+.metric-title {
+    font-size: 14px;
+    font-weight: 400;
+    color: #12325D;
+    margin-bottom: 5px;
+}
+
+.metric-value {
+    font-size: 40px;
+    font-weight: bold;
+    color: #12325D;
+    display: flex;
+    flex-direction:column;
+}
+
+
+.custom-table {
+    background: white;
+    margin-top: 25px;
+    padding: 25px;
+    border-radius: 18px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    width: 100%;
+}
+
+.custom-table table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.custom-table th {
+    text-align: center;
+    padding: 10px 8px;
+    font-size: 14px;
+    color: #4A4A4A;
+    border-bottom: 2px solid #E6E6E6;
+}
+
+.custom-table td {
+    padding: 12px 8px;
+    font-size: 14px;
+    color:#17385f;
+    font-weight: 600;
+    border-bottom: 1px solid #EFEFEF;
+    text-align: center;
+}
+
+.action-btn {
+    background-color: #17385f;
+    color: white;
+    padding: 6px 14px;
+    border-radius: 12px;
+    border: none;
+    cursor: pointer;
+    font-size: 13px;
+    transition: 0.2s;
+    font-weight: 600;
+}
+
+.action-btn:hover {
+    background-color: #003680;
+}
+
+
+.tabla-card {
+    background: white;
+    padding: 35px;
+    border-radius: 18px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    margin-top: 20px;
+    width: 100%;
+}
+
+
+/* === MODAL CONTAINER === */
+div[data-testid="stModal"] > div > div {
+    background: #f2f4f7 !important;      /* Fondo gris suave */
+    padding: 40px !important;
+    width: 850px !important;
+    border-radius: 25px !important;
+    box-shadow: 0px 10px 40px rgba(0,0,0,0.25) !important;
+    border: none !important;
+}
+
+div[data-testid="stModal"] * {
+    font-family: 'Inter', sans-serif !important;
+}
+
+.modal-title {
+    font-size: 28px;
+    font-weight: 800;
+    margin-bottom: 5px;
+    color: black;
+}
+.subtitle{
+    color: black;
+
+}
+div[data-testid="stModal"] div[style*="align-items: center"] {
+    color: black !important;
+}
+
+button[aria-label="Close"] {
+    color: black !important;           /* color del ícono X */
+    background: none !important;       /* sin fondo */
+    filter: brightness(0);             /* fuerza negro */
+}
+
+.modal-subtitle {
+    font-size: 18px;
+    font-weight: 700;
+    margin-top: 25px;
+    color: black;
+}
+label[data-testid="stWidgetLabel"] p {
+    color: black !important;
+}
+div[data-testid="stModal"] div[data-testid="column"] * {
+    color: black !important;
+}
+.result-card {
+    background: #ffffff;
+    padding: 22px;
+    border-radius: 18px;
+    box-shadow: 0px 4px 12px rgba(0,0,0,0.10);
+    text-align: center;
+}
+
+.result-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: #1c1c1e;
+    margin-bottom: 8px;
+}
+
+.result-value {
+    font-size: 18px;
+    font-weight: 700;
+    color: #17385F;   /* tu color principal */
+}
+
+div.stButton > button {
+    background-color: #17385F !important;   
+    color: white !important;                 
+    border-radius: 12px !important;          
+    padding: 12px 20px !important;           
+    font-size: 16px !important;              
+    font-weight: 600 ;             
+    border: none !important;                 
+}
+div.stButton > button:hover {
+    background-color: #1f497a !important;
+    color: white !important;
+}
+div.row-widget.stButton > button {
+    background-color: #17385F !important;
+    color: white !important;
+    border-radius: 12px !important;
+    padding: 12px 20px !important;
+    font-size: 16px !important;
+    font-weight: 600 !important;
+    border: none !important;
+}
+.st-emotion-cache-fm8pe0 {
+    color: #ffffff;
+}
+
+.stSelectbox > div {
+    background-color: #3062de !important;
+    border-radius: 10px !important;
+    border: 1px solid #334 !important;
+}
+
+.stSelectbox label p {
+    color: #002D62 !important;     /* Título */
+    font-weight: 600 !important;
+}
+
+/* Texto dentro del select */
+.stSelectbox div[data-baseweb="select"] {
+    color: white !important;
+}
+
+div[data-baseweb="select"] > div {
+    background-color: #ffffff !important;   /* Fondo */
+    border: 2px solid #002D62 !important;   /* Borde azul */
+    border-radius: 10px !important;
+    color: #002D62 !important;
+    font-weight: 600 !important;
+}
+
+div[data-baseweb="select"] span {
+    color: #002D62 !important;
+}
+
+ul[role="listbox"] {
+    background-color: white !important;
+    border-radius: 10px !important;
+    border: 1px solid #002D62 !important;
+    padding: 5px !important;
+}
+
+/* Opciones */
+ul[role="listbox"] li {
+    color: #002D62 !important;
+    font-weight: 600 !important;
+}
+
+/* Hover opción */
+ul[role="listbox"] li:hover {
+    background-color: #e3eaff !important;  /* Azul clarito */
+    cursor: pointer !important;
+}
