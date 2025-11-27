@@ -368,132 +368,205 @@ if st.session_state.page == "rna":
 #Cluster
 
 if st.session_state.page == "cluster":
-    # Cargar dataset clusterizado si existe
+    import random
+
+    # ---------------------------------------------------------
+    # 0. INYECCIÓN CSS (CORRECCIÓN DE COLORES - MODO PAPEL)
+    # ---------------------------------------------------------
+    st.markdown("""
+        <style>
+        /* 1. Forzar color NEGRO en Títulos y Textos generales */
+        h1, h2, h3, h4, h5, h6, p, span, div {
+            color: #0f172a !important; /* Azul muy oscuro/Negro */
+        }
+
+        /* 2. Forzar color NEGRO en las MÉTRICAS (Números grandes y etiquetas) */
+        [data-testid="stMetricLabel"] {
+            color: #475569 !important; /* Gris oscuro para la etiqueta */
+        }
+        [data-testid="stMetricValue"] {
+            color: #000000 !important; /* Negro puro para el número */
+        }
+        [data-testid="stMetricDelta"] svg {
+            fill: #000000 !important;
+        }
+
+        /* 3. Forzar color NEGRO en la caja de INSIGHT (st.info/st.success) */
+        [data-testid="stAlert"] {
+            background-color: #f0f9ff !important; /* Fondo azul muy claro */
+            color: #000000 !important;
+        }
+        [data-testid="stAlert"] * {
+            color: #000000 !important;
+        }
+
+        /* 4. Forzar TABLA BLANCA */
+        [data-testid="stDataFrame"] {
+            background-color: white !important;
+            border: 1px solid #e0e0e0 !important;
+        }
+
+        /* 5. Ajustes para el MODAL */
+        div[data-testid="stDialog"] {
+            background-color: white !important;
+        }
+        </style>
+    """, unsafe_allow_html=True)
+
+    # ---------------------------------------------------------
+    # 1. FUNCIONES Y CARGA
+    # ---------------------------------------------------------
+    def generar_nombre_falso(seed_val):
+        random.seed(seed_val)
+        nombres = ["Sofía", "Diego", "Valentina", "Mateo", "Camila", "Sebastián", "Isabella", "Alejandro", "Lucía", "Nicolás", "Mariana", "Samuel", "Gabriela", "Daniel", "Martina", "Felipe"]
+        apellidos = ["García", "Rodríguez", "González", "Fernández", "López", "Martínez", "Sánchez", "Pérez", "Gómez", "Díaz", "Hernández", "Vargas", "Castro"]
+        return f"{random.choice(nombres)} {random.choice(apellidos)}"
+
+    @st.dialog("Expediente del Estudiante")
+    def abrir_modal_detalle(row):
+        # Header forzado con HTML para asegurar color
+        colores = ['#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FFEEAD']
+        idx = int(row['cluster']) % len(colores)
+        c_bg = colores[idx]
+
+        c1, c2 = st.columns([1, 4])
+        with c1:
+            st.markdown(f"""
+            <div style='background-color:{c_bg}; border-radius:12px; text-align:center; padding:15px;'>
+                <h2 style='color:white !important; margin:0; text-shadow:none;'>G{int(row['cluster'])+1}</h2>
+            </div>""", unsafe_allow_html=True)
+        with c2:
+            # Usamos HTML directo para asegurar color negro en el modal
+            st.markdown(f"""
+            <div style='color:black;'>
+                <h3 style='color:black !important; margin:0;'>{row['Nombre']}</h3>
+                <p style='color:#555 !important; margin:0;'>ID: {row['student_id']} • {row['major']}</p>
+            </div>
+            """, unsafe_allow_html=True)
+
+        st.markdown("---")
+
+        # Métricas (El CSS inyectado arriba las pondrá negras)
+        m1, m2, m3 = st.columns(3)
+        m1.metric("Horas Estudio", f"{row['study_hours_wk']:.1f} h")
+        m2.metric("Nivel Estrés", f"{row['stress']:.1f}/10")
+        att = row.get('attendance_rate', 0)
+        m3.metric("Asistencia", f"{att:.1f}%", delta=f"{att-85:.1f}%")
+
+        # Insight (El CSS inyectado lo pondrá negro)
+        st.info(f"💡 **Insight:** Este estudiante muestra patrones similares al Cluster {int(row['cluster'])+1}")
+
+    # Carga de datos
     clustered_path = Path("data/dataset_clustered.csv")
     if clustered_path.exists():
         df = pd.read_csv(clustered_path)
     else:
-        st.warning("No se encontró 'data/dataset_clustered.csv'. Ejecuta el análisis de clustering primero.")
         st.stop()
 
-    # Cargar artefactos (si existen)
-    arte_dir = Path("artefactos/clustering")
-    kmeans, scaler, pca = None, None, None
     try:
-        kmeans = joblib.load(arte_dir / "kmeans_model.joblib")
-        scaler = joblib.load(arte_dir / "scaler.joblib")
-        pca = joblib.load(arte_dir / "pca_model.joblib")
-    except Exception:
-        # artefactos no disponibles: seguir con df
-        pass
+        pca = joblib.load(Path("artefactos/clustering/pca_model.joblib"))
+        scaler = joblib.load(Path("artefactos/clustering/scaler.joblib"))
+    except:
+        pca, scaler = None, None
 
-    st.markdown("""
-    <div class="custom-header">
-        <h2 style='color:#002D62;margin:0'>Clustering — Edu‑Insight 360</h2>
-    </div>
-    """, unsafe_allow_html=True)
+    # PCA Calculation
+    if 'pca_0' not in df.columns:
+        num = df.select_dtypes(include=[np.number]).fillna(0)
+        from sklearn.decomposition import PCA as skPCA
+        coords = skPCA(n_components=2).fit_transform(num)
+        df['pca_0'] = coords[:,0]; df['pca_1'] = coords[:,1]
 
-    # Métricas superiores
-    col1, col2, col3, col4 = st.columns(4)
-    with col1:
-        st.subheader("Total estudiantes")
-        st.metric("Total", f"{len(df)}")
-    with col2:
-        largest = df['cluster'].value_counts().idxmax() if 'cluster' in df.columns else None
-        st.subheader("Grupo más grande")
-        st.metric("Cluster", f"{int(largest)+1}" if largest is not None else "-")
-    with col3:
-        st.subheader("Horas estudio (prom)")
-        st.metric("Horas", f"{df['study_hours_wk'].mean():.1f}")
-    with col4:
-        st.subheader("Estrés (prom)")
-        st.metric("Estrés", f"{df['stress'].mean():.1f}")
-
-    # PCA scatter
-    if 'cluster' in df.columns and pca is not None:
-        pca_coords = pca.transform(scaler.transform(df[[c for c in df.columns if c in ['study_hours_wk','sleep_hours','lms_activity_rate','attendance_rate','assignments_on_time_rate','procrastination_index','self_efficacy','stress']]])) if scaler is not None else None
-    else:
-        pca_coords = None
-
-    if pca_coords is None:
-        # Fallback: try to load pca coords from columns if present
-        if {'pca_0','pca_1'}.issubset(set(df.columns)):
-            df['pca_0'] = df['pca_0']
-            df['pca_1'] = df['pca_1']
-        else:
-            # compute a simple PCA on selected numeric cols
-            numeric = df.select_dtypes(include=[np.number]).drop(columns=[c for c in ['student_id','cluster'] if c in df.columns], errors='ignore')
-            from sklearn.decomposition import PCA as skPCA
-            scaler_tmp = None
-            try:
-                from sklearn.preprocessing import StandardScaler as _SS
-                scaler_tmp = _SS()
-                numeric_s = scaler_tmp.fit_transform(numeric.fillna(numeric.mean()))
-            except Exception:
-                numeric_s = numeric.fillna(0).values
-            p = skPCA(n_components=2)
-            coords = p.fit_transform(numeric_s)
-            df['pca_0'] = coords[:,0]
-            df['pca_1'] = coords[:,1]
-
-    fig = px.scatter(df, x='pca_0', y='pca_1', color=df['cluster'].astype(str) if 'cluster' in df.columns else None,
-                     hover_data=['student_id','major'] if 'student_id' in df.columns else None,
-                     title='PCA 2D del dataset por cluster')
-    fig.update_layout(height=450)
-    st.plotly_chart(fig, use_container_width=True)
-
-    # Radar: comparar medias de variables seleccionadas por cluster
-    radar_features = ['study_hours_wk','stress','attendance_rate','procrastination_index','social_support','self_efficacy']
     if 'cluster' in df.columns:
-        cluster_means = df.groupby('cluster')[radar_features].mean()
-        # normalizar entre 0 y 1 por característica para radar
-        norm = (cluster_means - cluster_means.min()) / (cluster_means.max() - cluster_means.min() + 1e-9)
-        # permitir seleccionar clusters a mostrar
-        clusters_available = sorted(cluster_means.index.tolist())
-        selected = st.multiselect('Seleccionar clusters para comparar', options=[int(c) for c in clusters_available], default=[int(c) for c in clusters_available])
-        if selected:
-            radar_df = norm.loc[selected]
-            # preparar para plotly (long format)
-            radar_long = radar_df.reset_index().melt(id_vars='cluster', value_vars=radar_features, var_name='feature', value_name='value')
-            fig_radar = px.line_polar(radar_long, r='value', theta='feature', color='cluster', line_close=True, title='Comparación por cluster (normalizado)')
-            fig_radar.update_traces(fill='toself')
-            st.plotly_chart(fig_radar, use_container_width=True)
+        df['Grupo'] = (df['cluster'] + 1).astype(int)
 
-    # Tabla interactiva
-    st.subheader('Muestra de estudiantes')
-    table_cols = ['student_id','major','cluster','study_hours_wk','stress']
-    available_cols = [c for c in table_cols if c in df.columns]
-    st.dataframe(df[available_cols].head(200))
-
-    # Permitir seleccionar un estudiante para ver detalles
     if 'student_id' in df.columns:
-        sid = st.selectbox('Ver perfil del estudiante (ID)', options=[None] + df['student_id'].astype(str).tolist())
-        if sid:
-            student = df[df['student_id'].astype(str) == sid].iloc[0]
-            st.markdown(f"**ID:** {student.get('student_id')}  \n                         **Carrera:** {student.get('major')}  \n                         **Cluster:** {int(student.get('cluster'))+1 if 'cluster' in student.index else '-'}")
-            cols = st.columns(3)
-            with cols[0]:
-                st.metric('Horas estudio', f"{student.get('study_hours_wk'):.1f}")
-            with cols[1]:
-                st.metric('Estrés', f"{student.get('stress'):.1f}")
-            with cols[2]:
-                st.metric('Asistencia', f"{student.get('attendance_rate'):.1f}")
+        df['Nombre'] = df['student_id'].apply(lambda x: generar_nombre_falso(str(x)))
+
+    labels_map = {'study_hours_wk': 'Horas', 'stress': 'Estrés', 'pca_0': 'Dim 1', 'pca_1': 'Dim 2'}
+
+    # ---------------------------------------------------------
+    # 2. UI PRINCIPAL
+    # ---------------------------------------------------------
+    st.markdown("<div class='custom-header'><h2 style='color:#002D62 !important;'>Clustering — Edu‑Insight 360</h2></div>", unsafe_allow_html=True)
+
+    # Cards (El CSS global forzará negro)
+    st.markdown(f"""
+    <div class='metrics-grid'>
+        <div class='metric-card'><p style='color:#555 !important'>Total Estudiantes</p><h2 style='color:black !important'>{len(df)}</h2></div>
+        <div class='metric-card'><p style='color:#555 !important'>Grupo Mayoritario</p><h2 style='color:black !important'>G{df['Grupo'].value_counts().idxmax()}</h2></div>
+        <div class='metric-card'><p style='color:#555 !important'>Horas Promedio</p><h2 style='color:black !important'>{df['study_hours_wk'].mean():.1f}</h2></div>
+        <div class='metric-card'><p style='color:#555 !important'>Estrés Promedio</p><h2 style='color:black !important'>{df['stress'].mean():.1f}</h2></div>
+    </div><br>""", unsafe_allow_html=True)
+
+    col_L, col_R = st.columns([1, 1.5], gap="medium")
+
+    # --- RADAR ---
+    with col_L:
+        st.markdown("<h5 style='color:black !important'>🎯 Perfiles</h5>", unsafe_allow_html=True)
+        vars_r = ['study_hours_wk','stress','attendance_rate','procrastination_index','social_support','self_efficacy']
+        if 'cluster' in df.columns:
+            means = df.groupby('cluster')[vars_r].mean()
+            norm = (means - means.min())/(means.max()-means.min()+1e-9)
+            norm = norm.rename(columns=labels_map)
+            avail = sorted(df['cluster'].unique())
+
+            sel = st.multiselect('Comparar:', options=avail, default=avail, format_func=lambda x: f"G{x+1}")
+            if sel:
+                d = norm.loc[sel].reset_index()
+                d['cluster'] = "G" + (d['cluster']+1).astype(str)
+                fig = px.line_polar(d.melt(id_vars='cluster'), r='value', theta='variable', color='cluster',
+                                    line_close=True, template="plotly_white", height=350)
+                fig.update_traces(fill='toself')
+                # FORZAR TITULOS Y EJES NEGROS
+                fig.update_layout(font=dict(color="black"), paper_bgcolor='white', plot_bgcolor='white',
+                                  legend=dict(orientation="h", y=-0.2, font=dict(color="black")))
+                fig.update_polars(radialaxis=dict(tickfont=dict(color="black")), angularaxis=dict(tickfont=dict(color="black")))
+                st.plotly_chart(fig, use_container_width=True)
+
+    # --- TABLA ---
+    with col_R:
+        st.markdown("<h5 style='color:black !important'>📋 Estudiantes</h5>", unsafe_allow_html=True)
+        c1, c2 = st.columns(2)
+        with c1: f_g = st.selectbox("Grupo", [None]+[int(x)+1 for x in sorted(df['cluster'].unique())], format_func=lambda x: "Todos" if x is None else f"G{x}")
+        with c2: f_t = st.text_input("Buscar", placeholder="Nombre/ID")
+
+        dft = df[['student_id','Nombre','major','Grupo','study_hours_wk','stress']].copy()
+        if f_g: dft = dft[dft['Grupo']==f_g]
+        if f_t: dft = dft[dft['Nombre'].str.contains(f_t, case=False) | dft['student_id'].astype(str).str.contains(f_t, case=False)]
+
+        styled = dft.style.set_properties(**{'background-color':'white','color':'black','border-color':'#ddd'})
+
+        sel_row = st.dataframe(styled, use_container_width=True, hide_index=True, selection_mode="single-row", on_select="rerun", height=300,
+                               column_config={"student_id":"ID", "Nombre":"Estudiante", "Grupo":st.column_config.NumberColumn("G", format="G%d"), "stress":st.column_config.ProgressColumn("Estrés", format="%.1f", min_value=0, max_value=10)})
+
+        if sel_row.selection.rows:
+            full_row = df[df['student_id'] == dft.iloc[sel_row.selection.rows[0]]['student_id']].iloc[0]
+            abrir_modal_detalle(full_row)
 
     st.markdown("---")
-    st.markdown("Si necesitas que ajuste visuales al diseño de Figma (colores, layout o texto), dime qué partes quieres priorizar.")
 
-    # Botón para recalcular clustering (se ejecuta dentro del contenedor)
-    if st.button("Recalcular clustering", type="primary"):
-        with st.spinner("Recalculando clustering — esto puede tardar unos segundos..."):
-            try:
-                X, df_new, features = ca.load_and_preprocess_data("data/dataset.csv")
-                kmeans, scaler, labels, Xs = ca.perform_clustering(X, n_clusters=4)
-                pca, coords = ca.apply_pca(Xs, n_components=2)
-                stats, df_clustered = ca.get_cluster_statistics(df_new, labels)
-                ca.save_clustering_artifacts(kmeans, scaler, pca)
-                df_clustered.to_csv("data/dataset_clustered.csv", index=False)
-                st.success("Recalculo completado — artefactos y dataset actualizados.")
-                # recargar página para mostrar cambios
-                st.experimental_rerun()
-            except Exception as e:
-                st.error(f"Error al recalcular clustering: {e}")
+    # --- PCA & DIST ---
+    cm, cs = st.columns([2, 1])
+    with cm:
+        d2 = df.copy(); d2['G_str'] = "G" + d2['Grupo'].astype(str)
+        fig1 = px.scatter(d2, x='pca_0', y='pca_1', color='G_str', hover_data=['Nombre'],
+                          title="<b>Mapa de Clustering (PCA)</b>", template="plotly_white", labels=labels_map,
+                          color_discrete_sequence=px.colors.qualitative.Prism)
+        # FORZAR TITULOS Y EJES NEGROS
+        fig1.update_layout(height=400, font=dict(color="black"), paper_bgcolor='white', plot_bgcolor='white',
+                           title_font=dict(color="black"), legend_font=dict(color="black"))
+        fig1.update_xaxes(title_font=dict(color="black"), tickfont=dict(color="black"), showgrid=True, gridcolor='#eee')
+        fig1.update_yaxes(title_font=dict(color="black"), tickfont=dict(color="black"), showgrid=True, gridcolor='#eee')
+        st.plotly_chart(fig1, use_container_width=True)
+
+    with cs:
+        vc = df['Grupo'].value_counts().sort_index()
+        dd = pd.DataFrame({'G': ["G"+str(i) for i in vc.index], 'C': vc.values})
+        fig2 = px.bar(dd, x='G', y='C', text_auto=True, title="<b>Distribución</b>", template="plotly_white",
+                      color='G', color_discrete_sequence=px.colors.qualitative.Prism)
+        # FORZAR TITULOS Y EJES NEGROS
+        fig2.update_layout(height=400, showlegend=False, font=dict(color="black"), paper_bgcolor='white', plot_bgcolor='white',
+                           title_font=dict(color="black"))
+        fig2.update_xaxes(title_font=dict(color="black"), tickfont=dict(color="black"))
+        fig2.update_yaxes(title_font=dict(color="black"), tickfont=dict(color="black"))
+        st.plotly_chart(fig2, use_container_width=True)

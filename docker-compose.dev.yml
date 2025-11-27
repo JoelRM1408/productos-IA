@@ -15,6 +15,8 @@ services:
       - ./supabase_client.py:/app/supabase_client.py:rw
       - ./styles:/app/styles:rw
       - ./img:/app/img:rw
+      - ./data:/app/data:rw
+      - ./scripts:/app/scripts:rw
     command: >
       streamlit run streamlit_app.py
       --server.port=8501
