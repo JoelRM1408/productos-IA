@@ -227,7 +227,7 @@ button[aria-label="Close"] {
     font-size: 18px;
     font-weight: 700;
     margin-top: 25px;
-    color: black;
+    color: #17385F;
 }
 label[data-testid="stWidgetLabel"] p {
     color: black !important;
@@ -255,7 +255,15 @@ label[data-testid="stWidgetLabel"] p {
     font-weight: 700;
     color: #17385F;   /* tu color principal */
 }
+.estrategias-title{
+    color: #17385F;
+    font-weight: 700;
+}
 
+.estrategias-content{
+    color: #17385F;
+    margin-bottom: 20px;
+}
 div.stButton > button {
     background-color: #17385F !important;   
     color: white !important;                 
