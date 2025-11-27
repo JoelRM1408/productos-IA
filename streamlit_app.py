@@ -316,7 +316,7 @@ if st.session_state.page == "rna":
             st.session_state.show_save = True
 
             st.markdown("<h3 class='estrategias-title'>Estrategias de mejora</h3>", unsafe_allow_html=True)
-            st.markdown("<p class='estrategias-content'>Matar a Andres</p>", unsafe_allow_html=True)
+            st.markdown("<p class='estrategias-content'>Durante las seis semanas te recomiendo que primero ordenes todo tu material académico y organices tu tiempo; luego construyas una rutina de estudio estable y empieces a practicar programación de manera continua 🙂. Después aumenta la dificultad de los ejercicios, prepara tus evaluaciones con simulaciones y usa la quinta semana para corregir los temas que aún te cuesten. Finalmente, cierra el proceso creando un plan de mantenimiento que te permita sostener el avance, mejorar tu rendimiento y continuar con mayor seguridad en el curso.</p>", unsafe_allow_html=True)
 
         if st.session_state.get("show_save", False):
             if st.button("Guardar", type="primary", use_container_width=True):
