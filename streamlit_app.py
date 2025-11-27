@@ -262,17 +262,14 @@ if st.session_state.page == "rna":
             porc_r = f"{prob_r*100:.1f}%"
             porc_d = f"{prob_d*100:.1f}%"
             porc_b = f"{prob_b*100:.1f}%"
-            st.session_state.tabla_data[i][3] = f'{pred_d["pred_label"]} ({porc_d})'   # Deserción
-            st.session_state.tabla_data[i][4] = f'{pred_r["pred_label"]} ({porc_r})'   # Rendimiento
-            st.session_state.tabla_data[i][5] = f'{pred_b["pred_label"]} ({porc_b})'   # Bienestar
-            
+
             st.session_state.show_save = True
 
         if st.session_state.get("show_save", False):   
             if st.button("Guardar", type="primary", use_container_width=True):
-                nuevo_des = st.session_state.tabla_data[i][3]
-                nuevo_rend = st.session_state.tabla_data[i][4]
-                nuevo_bien = st.session_state.tabla_data[i][5]
+                nuevo_des = f'{pred_d["pred_label"]} ({porc_d})'
+                nuevo_rend = f'{pred_r["pred_label"]} ({porc_r})'
+                nuevo_bien = f'{pred_b["pred_label"]} ({porc_b})'
 
                 supabase.table("estudiantes").update({
                     "riesgo_des": nuevo_des,
