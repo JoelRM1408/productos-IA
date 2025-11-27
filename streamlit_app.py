@@ -237,7 +237,7 @@ if st.session_state.page == "rna":
                 st.markdown(
                     f"""
                     <div class='result-card'>
-                        <div class='result-title'>Prob. Rendimiento</div>
+                        <div class='result-title'>Prob. Desercion</div>
                         <div class='result-value'>{label_d}</div>
                         <div class='result-value'>({prob_d:.2%})</div>
                     </div>
@@ -252,7 +252,7 @@ if st.session_state.page == "rna":
                 st.markdown(
                     f"""
                     <div class='result-card'>
-                        <div class='result-title'>Prob. Rendimiento</div>
+                        <div class='result-title'>Prob. Bienestar</div>
                         <div class='result-value'>{label_b}</div>
                         <div class='result-value'>({prob_b:.2%})</div>
                     </div>
