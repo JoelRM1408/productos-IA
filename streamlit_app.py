@@ -259,8 +259,13 @@ if st.session_state.page == "rna":
                     """,
                     unsafe_allow_html=True
                 )
+            porc_r = f"{prob_r*100:.1f}%"
+            porc_d = f"{prob_d*100:.1f}%"
+            porc_b = f"{prob_b*100:.1f}%"
+            st.session_state.tabla_data[i][3] = f'{pred_d["pred_label"]} ({porc_d})'   # Deserción
+            st.session_state.tabla_data[i][4] = f'{pred_r["pred_label"]} ({porc_r})'   # Rendimiento
+            st.session_state.tabla_data[i][5] = f'{pred_b["pred_label"]} ({porc_b})'   # Bienestar
             
-
             st.session_state.show_save = True
 
         if st.session_state.get("show_save", False):   
@@ -289,6 +294,7 @@ if st.session_state.page == "rna":
                 
                 st.session_state.show_results = True
                 st.session_state.show_save = True
+                st.session_state.modal_closed = True
                 time.sleep(2)   
                 st.rerun()
             
