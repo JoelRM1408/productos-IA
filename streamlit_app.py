@@ -259,14 +259,15 @@ if st.session_state.page == "rna":
                     """,
                     unsafe_allow_html=True
                 )
-            porc_r = f"{prob_r*100:.1f}%"
-            porc_d = f"{prob_d*100:.1f}%"
-            porc_b = f"{prob_b*100:.1f}%"
+            
 
             st.session_state.show_save = True
 
         if st.session_state.get("show_save", False):   
             if st.button("Guardar", type="primary", use_container_width=True):
+                porc_r = f"{prob_r*100:.1f}%"
+                porc_d = f"{prob_d*100:.1f}%"
+                porc_b = f"{prob_b*100:.1f}%"
                 nuevo_des = f'{pred_d["pred_label"]} ({porc_d})'
                 nuevo_rend = f'{pred_r["pred_label"]} ({porc_r})'
                 nuevo_bien = f'{pred_b["pred_label"]} ({porc_b})'
