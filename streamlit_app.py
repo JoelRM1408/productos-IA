@@ -268,6 +268,12 @@ if st.session_state.page == "rna":
                 pred_r = predict_record(model_r, pre_r, schema_r, map_r, entrada)
                 pred_d = predict_record(model_d, pre_d, schema_d, map_d, entrada)
                 pred_b = predict_record(model_b, pre_b, schema_b, map_b, entrada)
+                label_r = pred_r["pred_label"]
+                prob_r = pred_r["probabilidades"][label_r]
+                label_d = pred_d["pred_label"]
+                prob_d = pred_d["probabilidades"][label_d]
+                label_b = pred_b["pred_label"]
+                prob_b = pred_b["probabilidades"][label_b]
                 porc_r = f"{prob_r*100:.1f}%"
                 porc_d = f"{prob_d*100:.1f}%"
                 porc_b = f"{prob_b*100:.1f}%"
