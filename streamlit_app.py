@@ -265,6 +265,9 @@ if st.session_state.page == "rna":
 
         if st.session_state.get("show_save", False):   
             if st.button("Guardar", type="primary", use_container_width=True):
+                pred_r = predict_record(model_r, pre_r, schema_r, map_r, entrada)
+                pred_d = predict_record(model_d, pre_d, schema_d, map_d, entrada)
+                pred_b = predict_record(model_b, pre_b, schema_b, map_b, entrada)
                 porc_r = f"{prob_r*100:.1f}%"
                 porc_d = f"{prob_d*100:.1f}%"
                 porc_b = f"{prob_b*100:.1f}%"
