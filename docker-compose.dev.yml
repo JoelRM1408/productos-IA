@@ -12,9 +12,13 @@ services:
       - ./artefactos:/app/artefactos:rw
       - ./streamlit_app.py:/app/streamlit_app.py:rw
       - ./loader_modelos.py:/app/loader_modelos.py:rw
+      - ./data:/app/data:rw
+      - ./clustering_analysis.py:/app/clustering_analysis.py:rw
       - ./supabase_client.py:/app/supabase_client.py:rw
       - ./styles:/app/styles:rw
       - ./img:/app/img:rw
+      
+
     command: >
       streamlit run streamlit_app.py
       --server.port=8501
