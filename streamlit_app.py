@@ -37,7 +37,52 @@ colB, colC = st.columns(2)
 with colB: nav_button("RNA: Guardian", "rna")
 with colC: nav_button("Clustering: Edu-Insight 360", "cluster")
 
+res = supabase.table("estudiantes").select("*").execute()
+datos = res.data
+total_estudiantes = len(datos)
+def extraer_categoria(valor):
+    if not valor:
+        return "-"
+    return valor.split(" (")[0] 
+riesgos = [extraer_categoria(fila["riesgo_des"]) for fila in datos]
+rendimientos = [extraer_categoria(fila["rendimiento"]) for fila in datos]
+bienestares = [extraer_categoria(fila["bienestar_est"]) for fila in datos]
+map_des = {
+    "Bajo": 1,
+    "Medio": 2,
+    "Alto": 3,
+    "Muy_Alto": 4
+}
 
+map_rend = {
+    "Inicio": 1,
+    "En_Proceso": 2,
+    "Previsto": 3,
+    "Destacado": 4
+}
+
+map_bien = {
+    "Crítico": 1,
+    "Regular": 2,
+    "Bueno": 3,
+    "Excelente": 4
+}
+
+def promedio_categoria(valores, mapa):
+    nums = [mapa[v] for v in valores if v in mapa]
+    if not nums:
+        return "-"
+    prom = sum(nums) / len(nums)
+    # redondear al valor más cercano
+    valor_red = round(prom)
+    # obtener categoria por valor
+    for cat, num in mapa.items():
+        if num == valor_red:
+            return cat
+    return "-"
+riesgo_prom = promedio_categoria(riesgos, map_des)
+rend_prom = promedio_categoria(rendimientos, map_rend)
+bien_prom = promedio_categoria(bienestares, map_bien)
 #RNAAAA
 
 if st.session_state.page == "rna":
@@ -55,36 +100,36 @@ if st.session_state.page == "rna":
 
 
     col1, col2, col3, col4, col5 = st.columns(5)
-
+    
     with col1:
-        st.markdown("""
+        st.markdown(f"""
             <div class="metric-card">
                 <p class="metric-title">Total de estudiantes</p>
-                <h2 class="metric-value">28</h2>
+                <h2 class="metric-value">{total_estudiantes}</h2>
             </div>
         """, unsafe_allow_html=True)
 
     with col2:
-        st.markdown("""
+        st.markdown(f"""
             <div class="metric-card">
                 <p class="metric-title">Riesgo de Deserción Promedio</p>
-                <h2 class="metric-value">Alto</h2>
+                <h2 class="metric-value">{riesgo_prom}</h2>
             </div>
         """, unsafe_allow_html=True)
 
     with col3:
-        st.markdown("""
+        st.markdown(f"""
             <div class="metric-card">
                 <p class="metric-title">Rendimiento Promedio</p>
-                <h2 class="metric-value">Previsto</h2>
+                <h2 class="metric-value">{rend_prom}</h2>
             </div>
         """, unsafe_allow_html=True)
 
     with col4:
-        st.markdown("""
+        st.markdown(f"""
             <div class="metric-card">
                 <p class="metric-title">Bienestar Estudiantil Promedio</p>
-                <h2 class="metric-value">Regular</h2>
+                <h2 class="metric-value">{bien_prom}</h2>
             </div>
         """, unsafe_allow_html=True)
 
@@ -94,8 +139,7 @@ if st.session_state.page == "rna":
         """, unsafe_allow_html=True)
 
 
-    res = supabase.table("estudiantes").select("*").execute()
-    datos = res.data
+    
 
     formateado = []
     for fila in datos:
