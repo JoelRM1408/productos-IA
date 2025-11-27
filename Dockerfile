@@ -4,9 +4,11 @@ RUN apt-get update && apt-get install -y --no-install-recommends libgomp1 && rm 
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 COPY streamlit_app.py ./streamlit_app.py
-COPY loader_modelos.py ./loader_modelos.py 
-COPY supabase_client.py ./supabase_client.py 
+COPY loader_modelos.py ./loader_modelos.py
+COPY supabase_client.py ./supabase_client.py
+COPY clustering_analysis.py ./clustering_analysis.py
 COPY artefactos ./artefactos
+COPY data ./data
 COPY styles ./styles
 COPY img ./img
 ENV ART_DIR=artefactos

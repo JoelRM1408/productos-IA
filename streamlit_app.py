@@ -2,6 +2,9 @@
 import streamlit as st
 import pandas as pd
 import joblib
+import numpy as np
+import plotly.express as px
+import clustering_analysis as ca
 from pathlib import Path
 from loader_modelos import load_bundle, predict_record
 import time
@@ -21,7 +24,7 @@ def load_css(file_name):
     with open(file_name, "r") as f:
         st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)
 
-load_css("styles/style.css") 
+load_css("styles/style.css")
 
 def nav_button(label, key):
     active = "nav-active" if st.session_state.page == key else ""
@@ -43,7 +46,7 @@ total_estudiantes = len(datos)
 def extraer_categoria(valor):
     if not valor:
         return "-"
-    return valor.split(" (")[0] 
+    return valor.split(" (")[0]
 riesgos = [extraer_categoria(fila["riesgo_des"]) for fila in datos]
 rendimientos = [extraer_categoria(fila["rendimiento"]) for fila in datos]
 bienestares = [extraer_categoria(fila["bienestar_est"]) for fila in datos]
@@ -100,7 +103,7 @@ if st.session_state.page == "rna":
 
 
     col1, col2, col3, col4, col5 = st.columns(5)
-    
+
     with col1:
         st.markdown(f"""
             <div class="metric-card">
@@ -139,7 +142,7 @@ if st.session_state.page == "rna":
         """, unsafe_allow_html=True)
 
 
-    
+
 
     formateado = []
     for fila in datos:
@@ -158,7 +161,7 @@ if st.session_state.page == "rna":
 
     html = """
     <div class="custom-table">
-    <h3 class="table-title" 
+    <h3 class="table-title"
         style="
             color:#002D62;
             font-size:24px;
@@ -309,10 +312,10 @@ if st.session_state.page == "rna":
             st.session_state.tabla_data[i][3] = f'{pred_d["pred_label"]} ({porc_d})'   # Deserción
             st.session_state.tabla_data[i][4] = f'{pred_r["pred_label"]} ({porc_r})'   # Rendimiento
             st.session_state.tabla_data[i][5] = f'{pred_b["pred_label"]} ({porc_b})'   # Bienestar
-            
+
             st.session_state.show_save = True
 
-        if st.session_state.get("show_save", False):   
+        if st.session_state.get("show_save", False):
             if st.button("Guardar", type="primary", use_container_width=True):
                 pred_r = predict_record(model_r, pre_r, schema_r, map_r, entrada)
                 pred_d = predict_record(model_d, pre_d, schema_d, map_d, entrada)
@@ -335,14 +338,14 @@ if st.session_state.page == "rna":
                     "rendimiento": nuevo_rend,
                     "bienestar_est": nuevo_bien
                 }).eq("codigo_est", codigo).execute()
-                
+
                 st.session_state.show_results = True
                 st.session_state.show_save = True
                 st.session_state.modal_closed = True
-                time.sleep(2)   
+                time.sleep(2)
                 st.rerun()
-            
-                
+
+
     if "row" in st.query_params:
         i = int(st.query_params["row"])
         codigo, nombre, carrera, des, rend, bien = st.session_state.tabla_data[i]
@@ -360,9 +363,137 @@ if st.session_state.page == "rna":
     model_b, pre_b, schema_b, map_b = load_bundle("artefactos/modelo_bienestar/v1")
 
 
-    
+
 
 #Cluster
 
 if st.session_state.page == "cluster":
-    st.write("Hola abel")
+    # Cargar dataset clusterizado si existe
+    clustered_path = Path("data/dataset_clustered.csv")
+    if clustered_path.exists():
+        df = pd.read_csv(clustered_path)
+    else:
+        st.warning("No se encontró 'data/dataset_clustered.csv'. Ejecuta el análisis de clustering primero.")
+        st.stop()
+
+    # Cargar artefactos (si existen)
+    arte_dir = Path("artefactos/clustering")
+    kmeans, scaler, pca = None, None, None
+    try:
+        kmeans = joblib.load(arte_dir / "kmeans_model.joblib")
+        scaler = joblib.load(arte_dir / "scaler.joblib")
+        pca = joblib.load(arte_dir / "pca_model.joblib")
+    except Exception:
+        # artefactos no disponibles: seguir con df
+        pass
+
+    st.markdown("""
+    <div class="custom-header">
+        <h2 style='color:#002D62;margin:0'>Clustering — Edu‑Insight 360</h2>
+    </div>
+    """, unsafe_allow_html=True)
+
+    # Métricas superiores
+    col1, col2, col3, col4 = st.columns(4)
+    with col1:
+        st.subheader("Total estudiantes")
+        st.metric("Total", f"{len(df)}")
+    with col2:
+        largest = df['cluster'].value_counts().idxmax() if 'cluster' in df.columns else None
+        st.subheader("Grupo más grande")
+        st.metric("Cluster", f"{int(largest)+1}" if largest is not None else "-")
+    with col3:
+        st.subheader("Horas estudio (prom)")
+        st.metric("Horas", f"{df['study_hours_wk'].mean():.1f}")
+    with col4:
+        st.subheader("Estrés (prom)")
+        st.metric("Estrés", f"{df['stress'].mean():.1f}")
+
+    # PCA scatter
+    if 'cluster' in df.columns and pca is not None:
+        pca_coords = pca.transform(scaler.transform(df[[c for c in df.columns if c in ['study_hours_wk','sleep_hours','lms_activity_rate','attendance_rate','assignments_on_time_rate','procrastination_index','self_efficacy','stress']]])) if scaler is not None else None
+    else:
+        pca_coords = None
+
+    if pca_coords is None:
+        # Fallback: try to load pca coords from columns if present
+        if {'pca_0','pca_1'}.issubset(set(df.columns)):
+            df['pca_0'] = df['pca_0']
+            df['pca_1'] = df['pca_1']
+        else:
+            # compute a simple PCA on selected numeric cols
+            numeric = df.select_dtypes(include=[np.number]).drop(columns=[c for c in ['student_id','cluster'] if c in df.columns], errors='ignore')
+            from sklearn.decomposition import PCA as skPCA
+            scaler_tmp = None
+            try:
+                from sklearn.preprocessing import StandardScaler as _SS
+                scaler_tmp = _SS()
+                numeric_s = scaler_tmp.fit_transform(numeric.fillna(numeric.mean()))
+            except Exception:
+                numeric_s = numeric.fillna(0).values
+            p = skPCA(n_components=2)
+            coords = p.fit_transform(numeric_s)
+            df['pca_0'] = coords[:,0]
+            df['pca_1'] = coords[:,1]
+
+    fig = px.scatter(df, x='pca_0', y='pca_1', color=df['cluster'].astype(str) if 'cluster' in df.columns else None,
+                     hover_data=['student_id','major'] if 'student_id' in df.columns else None,
+                     title='PCA 2D del dataset por cluster')
+    fig.update_layout(height=450)
+    st.plotly_chart(fig, use_container_width=True)
+
+    # Radar: comparar medias de variables seleccionadas por cluster
+    radar_features = ['study_hours_wk','stress','attendance_rate','procrastination_index','social_support','self_efficacy']
+    if 'cluster' in df.columns:
+        cluster_means = df.groupby('cluster')[radar_features].mean()
+        # normalizar entre 0 y 1 por característica para radar
+        norm = (cluster_means - cluster_means.min()) / (cluster_means.max() - cluster_means.min() + 1e-9)
+        # permitir seleccionar clusters a mostrar
+        clusters_available = sorted(cluster_means.index.tolist())
+        selected = st.multiselect('Seleccionar clusters para comparar', options=[int(c) for c in clusters_available], default=[int(c) for c in clusters_available])
+        if selected:
+            radar_df = norm.loc[selected]
+            # preparar para plotly (long format)
+            radar_long = radar_df.reset_index().melt(id_vars='cluster', value_vars=radar_features, var_name='feature', value_name='value')
+            fig_radar = px.line_polar(radar_long, r='value', theta='feature', color='cluster', line_close=True, title='Comparación por cluster (normalizado)')
+            fig_radar.update_traces(fill='toself')
+            st.plotly_chart(fig_radar, use_container_width=True)
+
+    # Tabla interactiva
+    st.subheader('Muestra de estudiantes')
+    table_cols = ['student_id','major','cluster','study_hours_wk','stress']
+    available_cols = [c for c in table_cols if c in df.columns]
+    st.dataframe(df[available_cols].head(200))
+
+    # Permitir seleccionar un estudiante para ver detalles
+    if 'student_id' in df.columns:
+        sid = st.selectbox('Ver perfil del estudiante (ID)', options=[None] + df['student_id'].astype(str).tolist())
+        if sid:
+            student = df[df['student_id'].astype(str) == sid].iloc[0]
+            st.markdown(f"**ID:** {student.get('student_id')}  \n                         **Carrera:** {student.get('major')}  \n                         **Cluster:** {int(student.get('cluster'))+1 if 'cluster' in student.index else '-'}")
+            cols = st.columns(3)
+            with cols[0]:
+                st.metric('Horas estudio', f"{student.get('study_hours_wk'):.1f}")
+            with cols[1]:
+                st.metric('Estrés', f"{student.get('stress'):.1f}")
+            with cols[2]:
+                st.metric('Asistencia', f"{student.get('attendance_rate'):.1f}")
+
+    st.markdown("---")
+    st.markdown("Si necesitas que ajuste visuales al diseño de Figma (colores, layout o texto), dime qué partes quieres priorizar.")
+
+    # Botón para recalcular clustering (se ejecuta dentro del contenedor)
+    if st.button("Recalcular clustering", type="primary"):
+        with st.spinner("Recalculando clustering — esto puede tardar unos segundos..."):
+            try:
+                X, df_new, features = ca.load_and_preprocess_data("data/dataset.csv")
+                kmeans, scaler, labels, Xs = ca.perform_clustering(X, n_clusters=4)
+                pca, coords = ca.apply_pca(Xs, n_components=2)
+                stats, df_clustered = ca.get_cluster_statistics(df_new, labels)
+                ca.save_clustering_artifacts(kmeans, scaler, pca)
+                df_clustered.to_csv("data/dataset_clustered.csv", index=False)
+                st.success("Recalculo completado — artefactos y dataset actualizados.")
+                # recargar página para mostrar cambios
+                st.experimental_rerun()
+            except Exception as e:
+                st.error(f"Error al recalcular clustering: {e}")
