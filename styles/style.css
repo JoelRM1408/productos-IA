@@ -232,12 +232,11 @@ button[aria-label="Close"] {
 label[data-testid="stWidgetLabel"] p {
     color: black !important;
 }
-div[data-testid="stModal"] div[data-testid="column"] * {
-    color: black !important;
-}
+
 .result-card {
     background: #ffffff;
     padding: 22px;
+    margin-bottom: 15px;
     border-radius: 18px;
     box-shadow: 0px 4px 12px rgba(0,0,0,0.10);
     text-align: center;
@@ -248,6 +247,7 @@ div[data-testid="stModal"] div[data-testid="column"] * {
     font-weight: 600;
     color: #1c1c1e;
     margin-bottom: 8px;
+    font-weight: 800;
 }
 
 .result-value {

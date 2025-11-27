@@ -223,23 +223,48 @@ if st.session_state.page == "rna":
                     f"""
                     <div class='result-card'>
                         <div class='result-title'>Prob. Rendimiento</div>
-                        <div class='result-value'>{label_r} ({prob_r:.2%})</div>
+                        <div class='result-value'>{label_r}</div>
+                        <div class='result-value'>({prob_r:.2%})</div>
                     </div>
                     """,
                     unsafe_allow_html=True
                 )
 
             with c2:
-                st.markdown("<div class='result-card'>Prob. Deserción</div>", unsafe_allow_html=True)
-                st.write(pred_d["pred_label"])
+                label_d = pred_d["pred_label"]
+                prob_d = pred_d["probabilidades"][label_d]
+
+                st.markdown(
+                    f"""
+                    <div class='result-card'>
+                        <div class='result-title'>Prob. Rendimiento</div>
+                        <div class='result-value'>{label_d}</div>
+                        <div class='result-value'>({prob_d:.2%})</div>
+                    </div>
+                    """,
+                    unsafe_allow_html=True
+                )
 
             with c3:
-                st.markdown("<div class='result-card'>Bienestar</div>", unsafe_allow_html=True)
-                st.write(pred_b["pred_label"])
+                label_b = pred_b["pred_label"]
+                prob_b = pred_b["probabilidades"][label_b]
 
-            st.session_state.tabla_data[i][3] = pred_d["pred_label"]   # Deserción
-            st.session_state.tabla_data[i][4] = pred_r["pred_label"]   # Rendimiento
-            st.session_state.tabla_data[i][5] = pred_b["pred_label"]   # Bienestar
+                st.markdown(
+                    f"""
+                    <div class='result-card'>
+                        <div class='result-title'>Prob. Rendimiento</div>
+                        <div class='result-value'>{label_b}</div>
+                        <div class='result-value'>({prob_b:.2%})</div>
+                    </div>
+                    """,
+                    unsafe_allow_html=True
+                )
+            porc_r = f"{prob_r*100:.1f}%"
+            porc_d = f"{prob_d*100:.1f}%"
+            porc_b = f"{prob_b*100:.1f}%"
+            st.session_state.tabla_data[i][3] = f'{pred_d["pred_label"]} ({porc_d})'   # Deserción
+            st.session_state.tabla_data[i][4] = f'{pred_r["pred_label"]} ({porc_r})'   # Rendimiento
+            st.session_state.tabla_data[i][5] = f'{pred_b["pred_label"]} ({porc_b})'   # Bienestar
             
             st.session_state.show_save = True
 
